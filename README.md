@@ -8,7 +8,7 @@ Route customer messages to **Support (0)** or **Sales (1)**, and compare a train
 
 ## Dataset
 
-- **File:** `Agent_KIO_Dataset_FINAL.xlsx`
+- **File:** `Agent_KIO_Dataset_Clean.xlsx`
 - **Sheets:**
   - `Dataset`: the 60 messages
   - `Checks`: formulas that verify the dataset is valid
