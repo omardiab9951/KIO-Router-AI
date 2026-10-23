@@ -59,10 +59,6 @@ def _validate(frame: pd.DataFrame) -> None:
         raise ValueError("Flag does not match Category")
 
 
-def get_train() -> pd.DataFrame:
-    return _read_frozen().query("Split == 'Train'").copy()
-
-
 def get_test(i_am_the_final_evaluation: bool = False) -> pd.DataFrame:
     # Test data is restricted to the final evaluation scripts only.
     if not i_am_the_final_evaluation:

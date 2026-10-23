@@ -17,19 +17,4 @@ KIO_CLEF_MODEL = os.getenv("KIO_CLEF_MODEL", "clef")
 EXPECTED_CONTENT_HASH = "9a655603b371639eafbef19719046355ed8759011cd5cf532cbce01dbf900484"
 
 
-def build_ml_pipeline(C: float):
-    """Build the course-model pipeline in one easy-to-find place."""
-    from sklearn.decomposition import TruncatedSVD
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.pipeline import Pipeline
-    from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-
-    return Pipeline([
-        ("tfidf", TfidfVectorizer(ngram_range=(1, 2), lowercase=True)),
-        ("svd", TruncatedSVD(n_components=2, random_state=42)),
-        ("poly", PolynomialFeatures(degree=2)),
-        ("scale", StandardScaler()),
-        ("logreg", LogisticRegression(C=C, random_state=42, max_iter=2000)),
-    ])
 

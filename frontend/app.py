@@ -7,17 +7,13 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import os
-
 import streamlit as st
 
 from kio import clef_router as clef_module
 from kio.clef_router import ClefRouter
 from kio.config import EXPECTED_CONTENT_HASH, PROJECT_DIR
 from kio.data import get_all_messages
-from kio.ml_router import MLRouter
 from kio.router import dispatch
-
 
 EXAMPLES = [
     "My apartment modem stopped responding after a storm.",
@@ -30,26 +26,19 @@ EXAMPLES = [
 
 
 def _safe_examples():
-    """Keep examples out of the dataset without using its labels or splits."""
     messages = {str(value).strip().casefold() for value in get_all_messages()["Message"]}
     return [example for example in EXAMPLES if example.strip().casefold() not in messages]
 
 
-def _router(mode: str, mock: bool):
-    if mode == "ML classifier":
-        return MLRouter()
+def _router(mock: bool):
     clef_module.KIO_MOCK = mock
     return ClefRouter()
 
 
-def _render_output(message: str, router, title: str):
+def _render_output(message: str, router):
     output, agent = dispatch(message, router)
-    st.subheader(title)
     if output.status != "ok" or output.label == "invalid":
-        if output.status.startswith("model_missing"):
-            st.info("The ML model is not trained yet. Run: python ml_model/train_ml_model.py")
-        else:
-            st.error(f"Routing failed: {output.status}")
+        st.error(f"Routing failed: {output.status}")
     else:
         st.metric("Flag", output.flag)
         st.write(f"**Label:** {output.label.title()}")
@@ -63,9 +52,8 @@ def _render_output(message: str, router, title: str):
     return output, agent
 
 
-def _record(mode: str, output, agent):
+def _record(output, agent):
     st.session_state.history.append({
-        "Mode": mode,
         "Label": output.label,
         "Flag": output.flag,
         "Status": output.status,
@@ -75,7 +63,6 @@ def _record(mode: str, output, agent):
 
 
 def _select_example(example: str):
-    """Set the text before Streamlit creates the text-area widget again."""
     st.session_state.message = example
 
 
@@ -88,40 +75,24 @@ def main():
         st.session_state.message = ""
 
     with st.sidebar:
-        mode = st.radio("Router", ["ML classifier", "Decision model (Clef)", "Compare both"])
-        mock = st.checkbox("Mock mode", value=True, disabled=(mode == "ML classifier"))
+        st.write("Decision model: Cloudflare Clef")
+        mock = st.checkbox("Mock mode", value=True)
         st.caption("The correct labels are never sent to any model.")
-        if mode != "ML classifier" and mock:
+        if mock:
             st.warning("MOCK MODE: not real model output")
 
     st.text_area("Customer message", key="message", height=120)
     st.caption("Invented examples:")
-    examples = _safe_examples()
-    for index, example in enumerate(examples):
-        st.button(
-            example,
-            key=f"example_{index}",
-            on_click=_select_example,
-            args=(example,),
-        )
+    for index, example in enumerate(_safe_examples()):
+        st.button(example, key=f"example_{index}", on_click=_select_example, args=(example,))
 
     if st.button("Route message", type="primary"):
         message = st.session_state.message.strip()
         if not message:
             st.error("Enter a customer message first.")
-        elif mode == "Compare both":
-            left, right = st.columns(2)
-            with left:
-                ml_output, ml_agent = _render_output(message, MLRouter(), "ML classifier")
-            with right:
-                clef_output, clef_agent = _render_output(message, _router(mode, mock), "Decision model (Clef)")
-            _record("ML classifier", ml_output, ml_agent)
-            _record("Decision model (Clef)", clef_output, clef_agent)
-            if ml_output.label != "invalid" and clef_output.label != "invalid" and ml_output.label != clef_output.label:
-                st.warning("The two routers disagree on this message.")
         else:
-            output, agent = _render_output(message, _router(mode, mock), mode)
-            _record(mode, output, agent)
+            output, agent = _render_output(message, _router(mock))
+            _record(output, agent)
 
     st.subheader("Session history")
     if st.session_state.history:
@@ -129,9 +100,7 @@ def main():
     else:
         st.info("No routed messages yet.")
 
-    info_tab, = st.tabs(["Model info"])
-    with info_tab:
-        st.write("**ML pipeline:** TF-IDF word 1–2 grams → 2D TruncatedSVD → degree-2 polynomial features → StandardScaler → LogisticRegression.")
+    with st.expander("Model info"):
         st.write("**Decision model:** Cloudflare Clef (`@cf/cloudflare/clef`).")
         instructions = (PROJECT_DIR / "kio" / "routing_instructions.md").read_text(encoding="utf-8")
         st.code("\n".join(instructions.splitlines()[:5]))
