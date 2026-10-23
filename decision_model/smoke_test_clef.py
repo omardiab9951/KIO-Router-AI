@@ -26,7 +26,7 @@ def _safe(text: str) -> str:
 def main() -> int:
     from dotenv import load_dotenv
 
-    load_dotenv()
+    load_dotenv(PROJECT_ROOT / ".env")
     if os.getenv("KIO_MOCK", "0") == "1":
         print("Refusing to run: KIO_MOCK=1; this smoke test requires the real Clef API.")
         return 1
@@ -45,9 +45,10 @@ def main() -> int:
     except json.JSONDecodeError:
         body = {}
 
-    answers = body.get("answers", {})
+    envelope = body.get("result", body) if isinstance(body, dict) else {}
+    answers = envelope.get("answers", {}) if isinstance(envelope, dict) else {}
     route = answers.get("route") if isinstance(answers, dict) else None
-    model = body.get("model", "unavailable")
+    model = envelope.get("model", body.get("model", "unavailable")) if isinstance(envelope, dict) else "unavailable"
     print("HTTP status: 200 (successful router response)")
     print(f"label: {result.label}")
     print(f"flag: {result.flag}")

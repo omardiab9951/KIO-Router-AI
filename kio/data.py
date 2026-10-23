@@ -7,7 +7,7 @@ import pandas as pd
 
 from .config import EXPECTED_CONTENT_HASH
 
-DATA_PATH = Path(__file__).resolve().parent.parent / "Agent_KIO_Dataset_FROZEN.xlsx"
+DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "Agent_KIO_Dataset_FROZEN.xlsx"
 REQUIRED_COLUMNS = ["ID", "Message", "Category", "Flag", "Split", "Group_ID", "Type"]
 
 
