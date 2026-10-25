@@ -171,7 +171,7 @@ def _compare(message):
 
 
 def main():
-    st.set_page_config(page_title="Agent KIO: Intent Router", page_icon="💜", layout="wide")
+    st.set_page_config(page_title="Agent KIO: Intent Router", page_icon="🤖", layout="wide")
     _inject_styles()
     _header()
     if "history" not in st.session_state:
