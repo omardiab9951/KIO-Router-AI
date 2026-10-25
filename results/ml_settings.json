@@ -1,0 +1,47 @@
+{
+  "C_values": [
+    0.1,
+    0.5,
+    1.0
+  ],
+  "chosen_C": 0.1,
+  "cv": "StratifiedGroupKFold",
+  "random_state": 42,
+  "cv_results": [
+    {
+      "C": 0.1,
+      "cv_accuracy": 0.825,
+      "fold_scores": [
+        0.875,
+        0.75,
+        0.75,
+        0.875,
+        0.875
+      ]
+    },
+    {
+      "C": 0.5,
+      "cv_accuracy": 0.825,
+      "fold_scores": [
+        0.875,
+        0.75,
+        0.75,
+        0.875,
+        0.875
+      ]
+    },
+    {
+      "C": 1.0,
+      "cv_accuracy": 0.825,
+      "fold_scores": [
+        0.875,
+        0.75,
+        0.75,
+        0.875,
+        0.875
+      ]
+    }
+  ],
+  "training_accuracy": 1.0,
+  "cross_validated_accuracy": 0.825
+}
